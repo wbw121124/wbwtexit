@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>wbwTexit</title>
+	<script type="module">
+		import { WbwTexit } from '../dist/index.esm.js';
+
+		const texit = new WbwTexit();
+
+		const input = `\\section{介绍}
+\\subsection{背景}
+这是一个用于将类似LaTeX语法转换为HTML的工具包。
+\\small{这是小号字体的示例。}
+你可以点击这里访问\\href[https://example.com]{示例网站}。
+下面是一张图片：
+\\includegraphics[width=200px]{https://via.placeholder.com/150}
+数学公式示例：\\math{E=mc^2}
+`;
+
+		const output = texit.parse(input);
+		document.body.innerHTML = output;
+	</script>
+</head>
+
+<body>
+
+</body>
+
+</html>
