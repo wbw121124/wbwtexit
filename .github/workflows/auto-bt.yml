@@ -23,6 +23,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Fix binary permissions
+        run: chmod +x node_modules/.bin/*
+
       - name: Run bt script
         run: npm run bt
 
