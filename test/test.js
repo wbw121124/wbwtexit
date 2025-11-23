@@ -66,7 +66,7 @@ This is the introduction section. Here is some \\textit{italic} text.
 \\newline
 \\newline
 And more text...\\newline
-The quick brown fox jumps over the lazy dog.`;
+The quick brown fox jumps over the lazy dog.\\char{128515}`;
 	const demoOutput = t.parseToHTML(demoInput);
 	// 输出demo.html
 	const fs = require('fs');

@@ -216,12 +216,12 @@ class wbwTexit {
 		// HTML 字符实体
 		this.functions["char"] = {
 			func: (args1, args2, dontneed = null) => {
-				if (args1 && args1.length > 0) {
-					const code = args1[0].trim();
-					return `&#${code};`;
-				}
+				const code = args2.
+					// 只保留数字和字母部分
+					replace(/[^\da-zA-Z_]/g, '').trim();
+				return `&#${code};`;
 			},
-			escape: false, const: true, noargs: false
+			escape: true, const: true, noargs: false
 		};
 	}
 
@@ -304,7 +304,7 @@ class wbwTexit {
 								} else {
 									if (wbwTexitString[iter] === '{' && !escape && keepEscapes) {
 										bracketCount++;
-									} else if (wbwTexitString[iter] === '}' && !escape && keepEscapes) {
+									} else if (wbwTexitString[iter] === '}' && !escape) {
 										bracketCount--;
 									}
 									if (bracketCount > 0) {
