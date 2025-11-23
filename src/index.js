@@ -1,7 +1,11 @@
+import katex from 'katex';
+
 const Packages = {};
+
 class wbwTexit {
 	constructor() {
 		this.functions = {};
+
 		this.functions["usepackage"] = {
 			func: (args1, args2, f) => {
 				for (let pkg of args1) {
@@ -10,150 +14,184 @@ class wbwTexit {
 							Packages[pkg].escape, Packages[pkg].noargs, true, f);
 					}
 				}
-				return {
-					pgk: f,
-					rtn: ""
-				};
+				return { pkg: f, rtn: "" };
 			},
-			escape: false,
-			const: true,
-			noargs: false
+			escape: false, const: true, noargs: false
 		}
-		// 转义括号、反斜杠等特殊字符
+
 		for (let char of ['{', '}', '[', ']', '\\', ',', ' ']) {
 			this.functions[char] = {
 				func: (args1, args2, dontneed = null) => {
-					return {
-						pk: dontneed,
-						rtn: char,
-					};
+					return { pkg: dontneed, rtn: char };
 				},
-				escape: false,
-				const: true,
-				noargs: true
+				escape: false, const: true, noargs: true
 			}
 		}
-		// 换行（newline）
+
 		this.functions["newline"] = {
-			func: (args1, args2, dontneed = null) => {
-				return '<br>';
-			},
-			escape: false,
-			const: true,
-			noargs: true
+			func: (args1, args2, dontneed = null) => { return '<br>'; },
+			escape: false, const: true, noargs: true
 		};
-		// 任意长度空格（hspace）
+
 		this.functions["hspace"] = {
 			func: (args1, args2, dontneed = null) => {
 				return `<span style='with:${args2} !important'></span>`;
 			},
-			escape: false,
-			const: true,
-			noargs: false
+			escape: false, const: true, noargs: false
 		};
-		// 加粗（bold）
+
 		this.functions["textbf"] = {
 			func: (args1, args2, f = null) => {
 				return `<strong>${this.parse(args2, f)}</strong>`;
 			},
-			escape: true,
-			const: true,
-			noargs: false
+			escape: true, const: true, noargs: false
 		};
-		// 斜体（italic）
+
 		this.functions["textit"] = {
 			func: (args1, args2, f = null) => {
 				return `<em>${this.parse(args2, f)}</em>`;
 			},
-			escape: true,
-			const: true,
-			noargs: false
+			escape: true, const: true, noargs: false
 		};
-		// 下划线（underline）
+
 		this.functions["underline"] = {
 			func: (args1, args2, f = null) => {
 				return `<u>${this.parse(args2, f)}</u>`;
 			},
-			escape: true,
-			const: true,
-			noargs: false
+			escape: true, const: true, noargs: false
 		};
-		// 删除线（sout）
+
 		this.functions["sout"] = {
 			func: (args1, args2, f = null) => {
 				return `<s>${this.parse(args2, f)}</s>`;
 			},
-			escape: true,
-			const: true,
-			noargs: false
+			escape: true, const: true, noargs: false
 		};
-		// 行内代码（texttt）
+
 		this.functions["texttt"] = {
 			func: (args1, args2, f = null) => {
 				return `<code>${this.parse(args2, f)}</code>`;
 			},
-			escape: true,
-			const: true,
-			noargs: false
+			escape: true, const: true, noargs: false
 		};
-		// 无序列表（itemize）
+
 		this.functions["itemize"] = {
 			func: (args1, args2, f = null) => {
 				return `<ul>${this.parse(args2, f)}</ul>`;
 			},
-			escape: true,
-			const: true,
-			noargs: false
+			escape: true, const: true, noargs: false
 		};
-		// 有序列表（enumerate）
+
 		this.functions["enumerate"] = {
 			func: (args1, args2, f = null) => {
 				return `<ol>${this.parse(args2, f)}</ol>`;
 			},
-			escape: true,
-			const: true,
-			noargs: false
+			escape: true, const: true, noargs: false
 		};
-		// 列表项（item）
+
 		this.functions["item"] = {
 			func: (args1, args2, f = null) => {
 				return `<li>${this.parse(args2, f)}</li>`;
 			},
-			escape: true,
-			const: true,
-			noargs: false
+			escape: true, const: true, noargs: false
+		};
+
+		this.functions["h1"] = {
+			func: (args1, args2, f = null) => {
+				return `<h1>${this.parse(args2, f)}</h1>`;
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		// Additional commonly-used functions
+		this.functions["section"] = {
+			func: (args1, args2, f = null) => {
+				return `<h2>${this.parse(args2, f)}</h2>`;
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		this.functions["subsection"] = {
+			func: (args1, args2, f = null) => {
+				return `<h3>${this.parse(args2, f)}</h3>`;
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		this.functions["small"] = {
+			func: (args1, args2, f = null) => {
+				return `<small>${this.parse(args2, f)}</small>`;
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		this.functions["href"] = {
+			// usage: \href[url]{text}
+			func: (args1, args2, f = null) => {
+				const url = (args1 && args1.length > 0) ? args1[0] : '#';
+				const text = this.parse(args2, f);
+				return `<a href="${this.escapeHTML(url)}">${text}</a>`;
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		this.functions["includegraphics"] = {
+			// usage: \includegraphics[width=100px]{src}
+			func: (args1, args2, f = null) => {
+				let style = '';
+				if (args1 && args1.length > 0) {
+					for (const opt of args1) {
+						const parts = opt.split('=');
+						if (parts[0].trim() === 'width' && parts[1]) {
+							style += `width:${parts[1].trim()};`;
+						}
+					}
+				}
+				const src = this.escapeHTML(args2.trim());
+				return `<img src="${src}" style="${style}"/>`;
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		this.functions["math"] = {
+			// render inline/display math using katex
+			func: (args1, args2, f = null) => {
+				try {
+					return katex.renderToString(args2 || '', { throwOnError: false });
+				} catch (e) {
+					return this.escapeHTML(args2 || '');
+				}
+			},
+			escape: true, const: true, noargs: false
 		};
 	}
-	// 注册一个函数
+
 	registerFunction(name, func, escape = false, noargs = false, force = false, functions = this.functions) {
 		if ((!force && functions[name]) || typeof func !== "function" ||
 			(functions[name] && functions[name].const)) {
 			throw new Error(`Function ${name} is already registered or is not a function.`);
 		}
-		functions[name] = {
-			func: func,
-			escape: escape,
-			noargs: noargs
-		};
+		functions[name] = { func: func, escape: escape, noargs: noargs };
+		return functions;
 	}
-	// 转义成HTML实体
+
 	escapeHTML(str) {
 		return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 			.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 	}
-	// 反斜杠转义
+
 	escapeString(str) {
 		return str.replace(/\\\\/g, "\\");
 	}
-	// 解析一个函数
+
 	parseFunction(name, args1, args2, registeredFunctions = this.functions) {
-		if (!this.functions[name]) {
+		if (!registeredFunctions[name]) {
 			throw new Error(`Function ${name} is not registered.`);
 		}
-		return this.functions[name].func(args1, (
-			this.functions[name].escape ? this.escapeString(args2) : args2), registeredFunctions);
+		const fn = registeredFunctions[name];
+		return fn.func(args1, (fn.escape ? this.escapeString(args2) : args2), registeredFunctions);
 	}
-	// 解析函数
+
 	parse(wbwTexitString, registeredFunctions = this.functions) {
 		let HTML = '';
 		let iter = 0;
@@ -176,7 +214,6 @@ class wbwTexit {
 				let args2 = '';
 				if (registeredFunctions[funcName]) {
 					if (!registeredFunctions[funcName].noargs) {
-						// 解析第一个参数组
 						while (iter < length && wbwTexitString[iter] === ' ') {
 							iter++;
 						}
@@ -199,10 +236,9 @@ class wbwTexit {
 								args1.push(arg.trim());
 							iter++;
 						}
-						// 解析第二个参数
 						if (iter < length && wbwTexitString[iter] === '{') {
 							iter++;
-							let escape = false, f = registeredFunctions[funcName].escape, bracketCount = 1;
+							let escape = false, keepEscapes = registeredFunctions[funcName].escape, bracketCount = 1;
 							while (iter < length && (bracketCount > 0)) {
 								if (wbwTexitString[iter] === '\\' && !escape) {
 									escape = true;
@@ -213,8 +249,7 @@ class wbwTexit {
 										bracketCount--;
 									}
 									if (bracketCount > 0) {
-										if (!f && escape)
-											args2 += '\\';
+										if (escape) args2 += '\\';
 										args2 += wbwTexitString[iter];
 									}
 									escape = false;
@@ -224,12 +259,18 @@ class wbwTexit {
 							if (bracketCount !== 0) {
 								throw new Error(`Mismatched braces in function ${funcName}.`);
 							}
-							if (escape && !f) {
+							if (escape) {
 								args2 += '\\';
 							}
 						}
 					}
-					HTML += this.parseFunction(funcName, args1, args2, registeredFunctions);
+					let tmp = this.parseFunction(funcName, args1, args2, registeredFunctions);
+					if (typeof tmp === 'string' || tmp instanceof String) {
+						HTML += tmp;
+					} else {
+						registeredFunctions = tmp.pkg;
+						HTML += tmp.rtn;
+					}
 				}
 				else {
 					throw new Error(`Function ${funcName} is not registered.`);
