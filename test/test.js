@@ -56,8 +56,9 @@
 
 	// 生成html的demo
 	const demoInput = `\\section{Welcome}
-This is a \\textbf{bold} statement with a \\href[http://example.com]{link}.
-Here is an image: \\includegraphics[width=200px]{http://placekitten.com/200/300}
+This is a \\textbf{bold} statement with a \\href[http://example.com]{link}.\\newline
+Here is an image: \\includegraphics[width=200px]{http://placekitten.com/200/300}\\newline
+And some small text: \\small{This is small}\\newline
 And some math: \\math{E=mc^2}
 `;
 	const demoOutput = t.parse(demoInput);

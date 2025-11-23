@@ -28,6 +28,25 @@ class wbwTexit {
 			}
 		}
 
+		this.functions["text"] = {
+			func: (args1, args2, dontneed = null) => {
+				return this.escapeHTML(args2);
+			},
+			escape: false, const: true, noargs: false
+		};
+
+		this.functions["space"] = {
+			func: (args1, args2, dontneed = null) => { return ' '; },
+			escape: false, const: true, noargs: true
+		};
+
+		this.functions["p"] = {
+			func: (args1, args2, f = null) => {
+				return `<p>${this.parse(args2, f)}</p>`;
+			},
+			escape: true, const: true, noargs: false
+		};
+
 		this.functions["newline"] = {
 			func: (args1, args2, dontneed = null) => { return '<br>'; },
 			escape: false, const: true, noargs: true
