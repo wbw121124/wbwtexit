@@ -122,7 +122,6 @@ class wbwTexit {
 			escape: true, const: true, noargs: false
 		};
 
-		// Additional commonly-used functions
 		this.functions["section"] = {
 			func: (args1, args2, f = null) => {
 				return `<h2>${this.parseToHTML(args2, f)}</h2>`;
@@ -145,7 +144,6 @@ class wbwTexit {
 		};
 
 		this.functions["href"] = {
-			// usage: \href[url]{text}
 			func: (args1, args2, f = null) => {
 				const url = (args1 && args1.length > 0) ? args1[0] : '#';
 				const text = this.parseToHTML(args2, f);
@@ -155,7 +153,6 @@ class wbwTexit {
 		};
 
 		this.functions["includegraphics"] = {
-			// usage: \includegraphics[width=100px]{src}
 			func: (args1, args2, f = null) => {
 				let style = '';
 				if (args1 && args1.length > 0) {
@@ -173,7 +170,6 @@ class wbwTexit {
 		};
 
 		this.functions["math"] = {
-			// render inline/display math using katex
 			func: (args1, args2, f = null) => {
 				try {
 					return katex.renderToString(args2 || '', { throwOnError: false });
@@ -185,7 +181,6 @@ class wbwTexit {
 		};
 
 		this.functions["displaymath"] = {
-			// render display math using katex
 			func: (args1, args2, f = null) => {
 				try {
 					return katex.renderToString(args2 || '', { displayMode: true, throwOnError: false });
@@ -213,13 +208,27 @@ class wbwTexit {
 			escape: true, const: true, noargs: false
 		};
 
-		// HTML 字符实体
 		this.functions["char"] = {
 			func: (args1, args2, dontneed = null) => {
-				const code = args2.
-					// 只保留数字和字母部分
-					replace(/[^\da-zA-Z_]/g, '').trim();
+				const code = args2.replace(/[^\da-zA-Z_]/g, '').trim();
 				return `&#${code};`;
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		// 新增功能
+		this.functions["textcolor"] = {
+			func: (args1, args2, f = null) => {
+				const color = args1[0] || 'black';
+				return `<span style="color:${color}">${this.parseToHTML(args2, f)}</span>`;
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		this.functions["fontsize"] = {
+			func: (args1, args2, f = null) => {
+				const size = args1[0] || '1em';
+				return `<span style="font-size:${size}">${this.parseToHTML(args2, f)}</span>`;
 			},
 			escape: true, const: true, noargs: false
 		};
@@ -235,8 +244,14 @@ class wbwTexit {
 	}
 
 	escapeHTML(str) {
-		return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-			.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+		const escapeMap = {
+			'&': '&amp;',
+			'<': '&lt;', 
+			'>': '&gt;',
+			'"': '&quot;',
+			"'": '&#39;'
+		};
+		return str.replace(/[&<>"']/g, char => escapeMap[char]);
 	}
 
 	escapeString(str) {
@@ -245,7 +260,7 @@ class wbwTexit {
 
 	parseFunction(name, args1, args2, registeredFunctions = this.functions) {
 		if (!registeredFunctions[name]) {
-			throw new Error(`Function ${name} is not registered.`);
+			return { pkg: registeredFunctions, rtn: `[未知命令: \\${name}]` };
 		}
 		const fn = registeredFunctions[name];
 		return fn.func(args1, (fn.escape ? this.escapeString(args2) : args2), registeredFunctions);
@@ -316,7 +331,7 @@ class wbwTexit {
 								iter++;
 							}
 							if (bracketCount !== 0) {
-								throw new Error(`Mismatched braces in function ${funcName}.`);
+								return { pkg: registeredFunctions, rtn: HTML + `[括号不匹配: \\${funcName}]` };
 							}
 							if (escape) {
 								args2 += '\\';
@@ -332,7 +347,7 @@ class wbwTexit {
 					}
 				}
 				else {
-					throw new Error(`Function ${funcName} is not registered.`);
+					HTML += `[未知命令: \\${funcName}]`;
 				}
 			}
 			else {
@@ -346,12 +361,13 @@ class wbwTexit {
 			functions: registeredFunctions
 		};
 	}
+
 	parseToHTML(element, registeredFunctions = this.functions) {
 		return this.parse(
 			typeof element === 'string' || element instanceof String ? element : element.innerText,
 			registeredFunctions
 		).html;
 	}
-};
+}
 
 export { wbwTexit };
