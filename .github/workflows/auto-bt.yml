@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.secret_wbwblog_secret }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
