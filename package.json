@@ -1,11 +1,11 @@
 {
   "name": "wbwtexit",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A typesetting package dev by wbw121124",
   "main": "./dist/index.cjs",
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
+    "build": "npx rollup -c",
+    "dev": "npx rollup -c -w",
     "test": "node test/test.js",
     "demo": "node test/test.js",
     "bt": "npm run build && npm run test"
