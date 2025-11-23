@@ -212,6 +212,17 @@ class wbwTexit {
 			},
 			escape: true, const: true, noargs: false
 		};
+
+		// HTML 字符实体
+		this.functions["char"] = {
+			func: (args1, args2, dontneed = null) => {
+				if (args1 && args1.length > 0) {
+					const code = args1[0].trim();
+					return `&#${code};`;
+				}
+			},
+			escape: false, const: true, noargs: false
+		};
 	}
 
 	registerFunction(name, func, escape = false, noargs = false, force = false, functions = this.functions) {
