@@ -197,7 +197,7 @@ class wbwTexit {
 			escape: true, const: true, noargs: false
 		};
 
-		this.functions["parse"] = {
+		this.functions["Parse"] = {
 			func: (args1, args2, f = null) => {
 				const result = this.parse(args2, f);
 				return { pkg: result.functions, rtn: result.html };
@@ -205,10 +205,10 @@ class wbwTexit {
 			escape: true, const: true, noargs: false
 		};
 
-		this.functions["Parse"] = {
+		this.functions["parse"] = {
 			func: (args1, args2, f = null) => {
-				const result = this.parse(args2, f);
-				return result.html;
+				const result = this.parseToHTML(args2, f);
+				return result;
 			},
 			escape: true, const: true, noargs: false
 		};
