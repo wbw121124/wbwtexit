@@ -296,7 +296,8 @@ class wbwTexit {
 				}
 			}
 			else {
-				HTML += this.escapeHTML(wbwTexitString[iter]);
+				if (wbwTexitString[iter] !== '\n')
+					HTML += this.escapeHTML(wbwTexitString[iter]);
 				iter++;
 			}
 		}

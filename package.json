@@ -7,7 +7,8 @@
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "test": "node test/test.js",
-    "demo": "node test/test.js"
+    "demo": "node test/test.js",
+    "bt": "npm run build && npm run test"
   },
   "keywords": [
     "text",
