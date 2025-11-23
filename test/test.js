@@ -17,36 +17,36 @@
 		assert.strictEqual(t.escapeString('\\\\'), '\\');
 
 		// basic parse
-		assert.strictEqual(t.parse('hello'), 'hello');
+		assert.strictEqual(t.parseToHTML('hello'), 'hello');
 
 		// simple formatting
-		assert.strictEqual(t.parse('\\textbf{bold}'), '<strong>bold</strong>');
-		assert.strictEqual(t.parse('\\textit{it}'), '<em>it</em>');
-		assert.strictEqual(t.parse('\\newline'), '<br>');
+		assert.strictEqual(t.parseToHTML('\\textbf{bold}'), '<strong>bold</strong>');
+		assert.strictEqual(t.parseToHTML('\\textit{it}'), '<em>it</em>');
+		assert.strictEqual(t.parseToHTML('\\newline'), '<br>');
 
 		// nested formatting
-		const nested = t.parse('\\textbf{bold \\textit{and} more}');
+		const nested = t.parseToHTML('\\textbf{bold \\textit{and} more}');
 		assert.strictEqual(nested, '<strong>bold <em>and</em> more</strong>');
 
 		// register and use custom function
 		t.registerFunction('shout', (args1, args2) => args2.toUpperCase(), true, false, false, t.functions);
-		assert.strictEqual(t.parse('\\shout{hello}'), 'HELLO');
+		assert.strictEqual(t.parseToHTML('\\shout{hello}'), 'HELLO');
 
 		// newly added functions
-		assert.strictEqual(t.parse('\\section{Title}'), '<h2>Title</h2>');
-		assert.strictEqual(t.parse('\\subsection{Sub}'), '<h3>Sub</h3>');
-		assert.strictEqual(t.parse('\\small{tiny}'), '<small>tiny</small>');
-		assert.strictEqual(t.parse('\\href[http://example.com]{link}'), '<a href="http://example.com">link</a>');
-		assert.strictEqual(t.parse('\\includegraphics[width=100px]{/img.png}'), '<img src="/img.png" style="width:100px;"/>');
+		assert.strictEqual(t.parseToHTML('\\section{Title}'), '<h2>Title</h2>');
+		assert.strictEqual(t.parseToHTML('\\subsection{Sub}'), '<h3>Sub</h3>');
+		assert.strictEqual(t.parseToHTML('\\small{tiny}'), '<small>tiny</small>');
+		assert.strictEqual(t.parseToHTML('\\href[http://example.com]{link}'), '<a href="http://example.com">link</a>');
+		assert.strictEqual(t.parseToHTML('\\includegraphics[width=100px]{/img.png}'), '<img src="/img.png" style="width:100px;"/>');
 
-		const mathOut = t.parse('\\math{1+1}');
+		const mathOut = t.parseToHTML('\\math{1+1}');
 		assert.ok(typeof mathOut === 'string' && mathOut.length > 0 && mathOut.includes('katex'));
 
 		// unknown function should throw
-		assert.throws(() => t.parse('\\unknown{a}'), /is not registered/);
+		assert.throws(() => t.parseToHTML('\\unknown{a}'), /is not registered/);
 
 		// mismatched braces should throw
-		assert.throws(() => t.parse('\\textbf{a'), /Mismatched braces/);
+		assert.throws(() => t.parseToHTML('\\textbf{a'), /Mismatched braces/);
 
 		console.log('All tests passed');
 	} catch (err) {
@@ -61,7 +61,7 @@ Here is an image: \\includegraphics[width=200px]{http://placekitten.com/200/300}
 And some small text: \\small{This is small}\\newline
 And some math: \\math{E=mc^2}
 `;
-	const demoOutput = t.parse(demoInput);
+	const demoOutput = t.parseToHTML(demoInput);
 	// 输出demo.html
 	const fs = require('fs');
 	const demoHtml = `<!DOCTYPE html>

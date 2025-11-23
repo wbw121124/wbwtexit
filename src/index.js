@@ -42,7 +42,7 @@ class wbwTexit {
 
 		this.functions["p"] = {
 			func: (args1, args2, f = null) => {
-				return `<p>${this.parse(args2, f)}</p>`;
+				return `<p>${this.parseToHTML(args2, f)}</p>`;
 			},
 			escape: true, const: true, noargs: false
 		};
@@ -61,63 +61,63 @@ class wbwTexit {
 
 		this.functions["textbf"] = {
 			func: (args1, args2, f = null) => {
-				return `<strong>${this.parse(args2, f)}</strong>`;
+				return `<strong>${this.parseToHTML(args2, f)}</strong>`;
 			},
 			escape: true, const: true, noargs: false
 		};
 
 		this.functions["textit"] = {
 			func: (args1, args2, f = null) => {
-				return `<em>${this.parse(args2, f)}</em>`;
+				return `<em>${this.parseToHTML(args2, f)}</em>`;
 			},
 			escape: true, const: true, noargs: false
 		};
 
 		this.functions["underline"] = {
 			func: (args1, args2, f = null) => {
-				return `<u>${this.parse(args2, f)}</u>`;
+				return `<u>${this.parseToHTML(args2, f)}</u>`;
 			},
 			escape: true, const: true, noargs: false
 		};
 
 		this.functions["sout"] = {
 			func: (args1, args2, f = null) => {
-				return `<s>${this.parse(args2, f)}</s>`;
+				return `<s>${this.parseToHTML(args2, f)}</s>`;
 			},
 			escape: true, const: true, noargs: false
 		};
 
 		this.functions["texttt"] = {
 			func: (args1, args2, f = null) => {
-				return `<code>${this.parse(args2, f)}</code>`;
+				return `<code>${this.parseToHTML(args2, f)}</code>`;
 			},
 			escape: true, const: true, noargs: false
 		};
 
 		this.functions["itemize"] = {
 			func: (args1, args2, f = null) => {
-				return `<ul>${this.parse(args2, f)}</ul>`;
+				return `<ul>${this.parseToHTML(args2, f)}</ul>`;
 			},
 			escape: true, const: true, noargs: false
 		};
 
 		this.functions["enumerate"] = {
 			func: (args1, args2, f = null) => {
-				return `<ol>${this.parse(args2, f)}</ol>`;
+				return `<ol>${this.parseToHTML(args2, f)}</ol>`;
 			},
 			escape: true, const: true, noargs: false
 		};
 
 		this.functions["item"] = {
 			func: (args1, args2, f = null) => {
-				return `<li>${this.parse(args2, f)}</li>`;
+				return `<li>${this.parseToHTML(args2, f)}</li>`;
 			},
 			escape: true, const: true, noargs: false
 		};
 
 		this.functions["h1"] = {
 			func: (args1, args2, f = null) => {
-				return `<h1>${this.parse(args2, f)}</h1>`;
+				return `<h1>${this.parseToHTML(args2, f)}</h1>`;
 			},
 			escape: true, const: true, noargs: false
 		};
@@ -125,21 +125,21 @@ class wbwTexit {
 		// Additional commonly-used functions
 		this.functions["section"] = {
 			func: (args1, args2, f = null) => {
-				return `<h2>${this.parse(args2, f)}</h2>`;
+				return `<h2>${this.parseToHTML(args2, f)}</h2>`;
 			},
 			escape: true, const: true, noargs: false
 		};
 
 		this.functions["subsection"] = {
 			func: (args1, args2, f = null) => {
-				return `<h3>${this.parse(args2, f)}</h3>`;
+				return `<h3>${this.parseToHTML(args2, f)}</h3>`;
 			},
 			escape: true, const: true, noargs: false
 		};
 
 		this.functions["small"] = {
 			func: (args1, args2, f = null) => {
-				return `<small>${this.parse(args2, f)}</small>`;
+				return `<small>${this.parseToHTML(args2, f)}</small>`;
 			},
 			escape: true, const: true, noargs: false
 		};
@@ -148,7 +148,7 @@ class wbwTexit {
 			// usage: \href[url]{text}
 			func: (args1, args2, f = null) => {
 				const url = (args1 && args1.length > 0) ? args1[0] : '#';
-				const text = this.parse(args2, f);
+				const text = this.parseToHTML(args2, f);
 				return `<a href="${this.escapeHTML(url)}">${text}</a>`;
 			},
 			escape: true, const: true, noargs: false
@@ -301,7 +301,16 @@ class wbwTexit {
 				iter++;
 			}
 		}
-		return HTML;
+		return {
+			html: HTML,
+			functions: registeredFunctions
+		};
+	}
+	parseToHTML(element, registeredFunctions = this.functions) {
+		return this.parse(
+			typeof element === 'string' || element instanceof String ? element : element.innerText,
+			registeredFunctions
+		).html;
 	}
 };
 
