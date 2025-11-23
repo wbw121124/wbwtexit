@@ -1,6 +1,6 @@
 {
   "name": "wbwtexit",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "A typesetting package dev by wbw121124",
   "main": "./dist/index.cjs",
   "scripts": {
