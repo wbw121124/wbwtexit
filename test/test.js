@@ -59,8 +59,14 @@
 This is a \\textbf{bold} statement with a \\href[http://example.com]{link}.\\newline
 Here is an image: \\includegraphics[width=200px]{http://placekitten.com/200/300}\\newline
 And some small text: \\small{This is small}\\newline
-And some math: \\math{E=mc^2}
-`;
+And some math: \\math{E=mc^2}\\newline
+And a subsection:\\newline
+\\subsection{Introduction}
+This is the introduction section. Here is some \\textit{italic} text.
+\\newline
+\\newline
+And more text...\\newline
+The quick brown fox jumps over the lazy dog.`;
 	const demoOutput = t.parseToHTML(demoInput);
 	// 输出demo.html
 	const fs = require('fs');

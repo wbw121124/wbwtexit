@@ -183,6 +183,35 @@ class wbwTexit {
 			},
 			escape: true, const: true, noargs: false
 		};
+
+		this.functions["displaymath"] = {
+			// render display math using katex
+			func: (args1, args2, f = null) => {
+				try {
+					return katex.renderToString(args2 || '', { displayMode: true, throwOnError: false });
+				}
+				catch (e) {
+					return this.escapeHTML(args2 || '');
+				}
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		this.functions["parse"] = {
+			func: (args1, args2, f = null) => {
+				const result = this.parse(args2, f);
+				return { pkg: result.functions, rtn: result.html };
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		this.functions["Parse"] = {
+			func: (args1, args2, f = null) => {
+				const result = this.parse(args2, f);
+				return result.html;
+			},
+			escape: true, const: true, noargs: false
+		};
 	}
 
 	registerFunction(name, func, escape = false, noargs = false, force = false, functions = this.functions) {
@@ -262,9 +291,9 @@ class wbwTexit {
 								if (wbwTexitString[iter] === '\\' && !escape) {
 									escape = true;
 								} else {
-									if (wbwTexitString[iter] === '{' && !escape) {
+									if (wbwTexitString[iter] === '{' && !escape && keepEscapes) {
 										bracketCount++;
-									} else if (wbwTexitString[iter] === '}' && !escape) {
+									} else if (wbwTexitString[iter] === '}' && !escape && keepEscapes) {
 										bracketCount--;
 									}
 									if (bracketCount > 0) {
