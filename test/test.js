@@ -38,6 +38,7 @@
 		assert.strictEqual(t.parseToHTML('\\small{tiny}'), '<small>tiny</small>');
 		assert.strictEqual(t.parseToHTML('\\href[http://example.com]{link}'), '<a href="http://example.com">link</a>');
 		assert.strictEqual(t.parseToHTML('\\includegraphics[width=100px]{/img.png}'), '<img src="/img.png" style="width:100px;"/>');
+		assert.strictEqual(t.parseToHTML('\\set[$a]{\"dsf\"}\\var{$a}'), 'dsf');
 
 		const mathOut = t.parseToHTML('\\math{1+1}');
 		assert.ok(typeof mathOut === 'string' && mathOut.length > 0 && mathOut.includes('katex'));
@@ -66,7 +67,30 @@ This is the introduction section. Here is some \\textit{italic} text.
 \\newline
 \\newline
 And more text...\\newline
-The quick brown fox jumps over the lazy dog.\\char{128515}`;
+The quick brown fox jumps over the lazy dog.\\char{#128515}\\newline
+\\setp[$0,$1,$2]{\\textbf{bold}\\newline
+\\textit{italic}\\newline\\newline}
+\\set[$3]{"hi <script>console.log('hello world!')</script>"}
+\\set[$4]{12345我是·数字67890}
+\\set[$5]{999·666}
+\\add[$6,$4,$5]
+\\var{$0}
+\\var{$1}
+\\var{$2}
+\\var{$3}\\newline
+\\var{$4}\\newline
+\\var{$5}\\newline
+\\var{$6}\\newline
+\\add[$7,$6,$3,$0]
+\\vars{$7}\\newline
+\\del[$7,$5,$6,$6]
+\\vars{$7}\\newline
+\\unknow\\newline
+\\times[$8,$3,$5]
+\\var{$7}
+\\usepackage[copytex]
+\\copytex
+`;
 	const demoOutput = t.parseToHTML(demoInput);
 	// 输出demo.html
 	const fs = require('fs');
@@ -75,7 +99,7 @@ The quick brown fox jumps over the lazy dog.\\char{128515}`;
 <head>
 <meta charset="UTF-8">
 <title>wbwTexit Demo</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<link rel="stylesheet" href="../katex/dist/katex.min.css">
 </head>
 <body>
 ${demoOutput}

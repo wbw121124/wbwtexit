@@ -1,6 +1,13 @@
 import katex from 'katex';
 
-const Packages = {};
+const Packages = {
+	copytex: {
+		func: (args1, args2, f = null) => {
+			return `<script>!function(e,t){if("object"==typeof exports&&"object"==typeof module)module.exports=t();else if("function"==typeof define&&define.amd)define([],t);else{var n=t();for(var o in n)("object"==typeof exports?exports:e)[o]=n[o]}}("undefined"!=typeof self?self:this,(function(){return function(){"use strict";var e={};const t={inline:["$","$"],display:["$$","$$"]};var n=function(e,n){void 0===n&&(n=t);const o=e.querySelectorAll(".katex-mathml + .katex-html");for(let e=0;e<o.length;e++){const t=o[e];t.remove?t.remove():t.parentNode&&t.parentNode.removeChild(t)}const r=e.querySelectorAll(".katex-mathml");for(let e=0;e<r.length;e++){const t=r[e],o=t.querySelector("annotation");o&&(t.replaceWith?t.replaceWith(o):t.parentNode&&t.parentNode.replaceChild(o,t),o.innerHTML=n.inline[0]+o.innerHTML+n.inline[1])}const l=e.querySelectorAll(".katex-display annotation");for(let e=0;e<l.length;e++){const t=l[e];t.innerHTML=n.display[0]+t.innerHTML.substr(n.inline[0].length,t.innerHTML.length-n.inline[0].length-n.inline[1].length)+n.display[1]}return e};function o(e){const t=e instanceof Element?e:e.parentElement;return t&&t.closest(".katex")}return document.addEventListener("copy",(function(e){const t=window.getSelection();if(t.isCollapsed||!e.clipboardData)return;const r=e.clipboardData,l=t.getRangeAt(0),i=o(l.startContainer);i&&l.setStartBefore(i);const a=o(l.endContainer);a&&l.setEndAfter(a);const s=l.cloneContents();if(!s.querySelector(".katex-mathml"))return;const c=Array.prototype.map.call(s.childNodes,(e=>e instanceof Text?e.textContent:e.outerHTML)).join("");r.setData("text/html",c),r.setData("text/plain",n(s).textContent),e.preventDefault()})),e=e.default}()}));</script>`;
+		},
+		escape: true, noargs: true
+	}
+};
 
 class wbwTexit {
 	constructor() {
@@ -192,7 +199,7 @@ class wbwTexit {
 			escape: true, const: true, noargs: false
 		};
 
-		this.functions["Parse"] = {
+		this.functions["pparse"] = {
 			func: (args1, args2, f = null) => {
 				const result = this.parse(args2, f);
 				return { pkg: result.functions, rtn: result.html };
@@ -210,13 +217,12 @@ class wbwTexit {
 
 		this.functions["char"] = {
 			func: (args1, args2, dontneed = null) => {
-				const code = args2.replace(/[^\da-zA-Z_]/g, '').trim();
-				return `&#${code};`;
+				const code = args2.replace(/[^a-zA-Z_#]/g, '').trim();
+				return `&${code};`;
 			},
 			escape: true, const: true, noargs: false
 		};
 
-		// 新增功能
 		this.functions["textcolor"] = {
 			func: (args1, args2, f = null) => {
 				const color = args1[0] || 'black';
@@ -232,7 +238,147 @@ class wbwTexit {
 			},
 			escape: true, const: true, noargs: false
 		};
+
+		this.vars = {};
+
+		this.functions["var"] = {
+			func: (args1, args2, f = null) => {
+				if (!args2 || args2 === '')
+					return '';
+				if (args2[0] == '$')
+					return this.escapeHTML(String(this.vars[args2]));
+				return `<span style="color: red">[变量请以 \`$\` 开头，在 \`\\var\` 中]</span>`;
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		this.functions["vars"] = {
+			func: (args1, args2, f = null) => {
+				return `<span style="color: red">[\`\\vars\` 不安全]</span>`;
+				if (!args2 || args2 === '')
+					return '';
+				if (args2[0] == '$')
+					return String(this.vars[args2]);
+				return `<span style="color: red">[变量请以 \`$\` 开头，在 \`\\vars\` 中]</span>`;
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		this.functions["setp"] = {
+			func: (args1, args2, f) => {
+				let tmp = this.parse(args2, f).html;
+				tmp = tmp.replace('&lt;', '<').replace('&gt;', '>').
+					replace('&quot;', '"').replace('&#39;', '\'').
+					replace('&amp;', '&');
+				for (let i = 0; i < args1.length; i++) {
+					if (!args2 || args1[i][0] != '$')
+						return `<span style="color: red">[变量请以 \`$\` 开头，在 \`\\setp\` 中]</span>`;
+					this.vars[args1[i]] = tmp;
+				}
+				return '';
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		this.functions["set"] = {
+			func: (args1, args2, f = null) => {
+				let tmp = args2;
+				if ((tmp[0] >= '0' && tmp[0] <= '9') ||
+					tmp[0] == '+' || tmp[0] == '-') {
+					tmp = Number(tmp.replace(/[^0-9.eE+-]/g, '').trim())
+				}
+				else if (tmp[0] == '"' && tmp[tmp.length - 1] == '"')
+					tmp = tmp.slice(1, tmp.length - 1);
+				else
+					return '<span style="color: red">[\`\\set\` 函数输入值非数字或以 \`\"\` 开头、结尾的字符串]</span>'
+				for (let i = 0; i < args1.length; i++) {
+					if (!args2 || args1[i][0] != '$')
+						return `<span style="color: red">[变量请以 \`$\` 开头，在 \`\\set\` 中]</span>`;
+					this.vars[args1[i]] = tmp;
+				}
+				return '';
+			},
+			escape: true, const: true, noargs: false
+		};
+
+		this.functions["add"] = {
+			func: (args1, args2, f = null) => {
+				if (args1.length < 2)
+					return;
+				if (args1[0][0] != '$')
+					return `<span style="color: red">[变量请以 \`$\` 开头，在 \`\\add\` 中]</span>`;
+				let tmp = this.escapeVar(args1[1]);
+				for (let i = 2; i < args1.length; i++) {
+					tmp = tmp + this.escapeVar(args1[i]);
+				}
+				this.vars[args1[0]] = tmp;
+				return '';
+			},
+			escape: true, const: true, noargs: false
+		}
+
+		this.functions["div"] = {
+			func: (args1, args2, f = null) => {
+				if (args1.length < 2)
+					return;
+				if (args1[0][0] != '$')
+					return `<span style="color: red">[变量请以 \`$\` 开头，在 \`\\add\` 中]</span>`;
+				let tmp = this.escapeVar(args1[1]);
+				for (let i = 2; i < args1.length; i++) {
+					tmp = tmp / this.escapeVar(args1[i]);
+				}
+				this.vars[args1[0]] = tmp;
+				return '';
+			},
+			escape: true, const: true, noargs: false
+		}
+
+		this.functions["del"] = {
+			func: (args1, args2, f = null) => {
+				if (args1.length < 2)
+					return;
+				if (args1[0][0] != '$')
+					return `<span style="color: red">[变量请以 \`$\` 开头，在 \`\\add\` 中]</span>`;
+				let tmp = this.escapeVar(args1[1]);
+				for (let i = 2; i < args1.length; i++) {
+					tmp = tmp - this.escapeVar(args1[i]);
+				}
+				this.vars[args1[0]] = tmp;
+				return '';
+			},
+			escape: true, const: true, noargs: false
+		}
+
+		this.functions["times"] = {
+			func: (args1, args2, f = null) => {
+				if (args1.length < 2)
+					return;
+				if (args1[0][0] != '$')
+					return `<span style="color: red">[变量请以 \`$\` 开头，在 \`\\add\` 中]</span>`;
+				let tmp = this.escapeVar(args1[1]);
+				for (let i = 2; i < args1.length; i++) {
+					tmp = tmp * this.escapeVar(args1[i]);
+				}
+				this.vars[args1[0]] = tmp;
+				return '';
+			},
+			escape: true, const: true, noargs: false
+		}
 	}
+
+	escapeVar(tmp) {
+		if ((tmp[0] >= '0' && tmp[0] <= '9') ||
+			tmp[0] == '+' || tmp[0] == '-') {
+			tmp = Number(tmp.replace(/[^0-9.eE+-]/g, '').trim())
+		}
+		else if (tmp[0] == '"' && tmp[tmp.length - 1] == '"')
+			tmp = tmp.slice(1, tmp.length - 1);
+		else if (tmp[0] == '$')
+			tmp = this.vars[tmp];
+		else
+			tmp = '';
+		return tmp;
+	};
 
 	registerFunction(name, func, escape = false, noargs = false, force = false, functions = this.functions) {
 		if ((!force && functions[name]) || typeof func !== "function" ||
@@ -246,7 +392,7 @@ class wbwTexit {
 	escapeHTML(str) {
 		const escapeMap = {
 			'&': '&amp;',
-			'<': '&lt;', 
+			'<': '&lt;',
 			'>': '&gt;',
 			'"': '&quot;',
 			"'": '&#39;'
@@ -286,7 +432,7 @@ class wbwTexit {
 				}
 				let args1 = [];
 				let args2 = '';
-				if (registeredFunctions[funcName]) {
+				if (registeredFunctions.hasOwnProperty(funcName)) {
 					if (!registeredFunctions[funcName].noargs) {
 						while (iter < length && wbwTexitString[iter] === ' ') {
 							iter++;
@@ -338,7 +484,12 @@ class wbwTexit {
 							}
 						}
 					}
-					let tmp = this.parseFunction(funcName, args1, args2, registeredFunctions);
+					let tmp = '';
+					try {
+						tmp = this.parseFunction(funcName, args1, args2, registeredFunctions);
+					} catch (e) {
+						tmp = `<span style="color: red">[错误：${String(e)}]</span>`
+					}
 					if (typeof tmp === 'string' || tmp instanceof String) {
 						HTML += tmp;
 					} else {
@@ -347,7 +498,7 @@ class wbwTexit {
 					}
 				}
 				else {
-					HTML += `[未知命令: \\${funcName}]`;
+					HTML += `<span style="color: red">[未知命令: \`\\${funcName}\`]</span>`;
 				}
 			}
 			else {
